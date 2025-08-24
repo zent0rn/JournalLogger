@@ -68,21 +68,21 @@ private:
 
 };
 
-JournalLogger::JournalLogger(const std::string& filename, LogLevel level)
+JournalLogger::JournalLogger(const std::string& filename, ImportanceLevel level)
     : pImpl(new Impl(filename, level)) {}
 
 JournalLogger::~JournalLogger() {
     delete pImpl;
 }
 
-void JournalLogger::SetLevel(LogLevel level) {
+void JournalLogger::SetLevel(ImportanceLevel level) {
     pImpl->SetLevel(level);
 }
 
-void JournalLogger::SaveMessage(const std::string& message, LogLevel level) {
+void JournalLogger::SaveMessage(const std::string& message, ImportanceLevel level) {
     pImpl->SaveMessage(message, level);
 }
 
 void JournalLogger::SaveMessage(const std::string& message) {
-    pImpl->SaveMessage(message, LogLevel::Info);
+    pImpl->SaveMessage(message, ImportanceLevel::Medium);
 }

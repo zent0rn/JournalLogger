@@ -4,9 +4,9 @@
 #include <string>
 
 enum class ImportanceLevel {
-    High,
+    Low,
     Medium,
-    Low
+    High
 };
 
 class JournalLogger {
