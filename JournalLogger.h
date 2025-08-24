@@ -1,0 +1,4 @@
+#ifndef JOURNALLOGGER_H
+#define JOURNALLOGGER_H
+
+#endif // JOURNALLOGGER_H
