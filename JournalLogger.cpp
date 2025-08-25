@@ -22,6 +22,11 @@ public:
         }
     }
 
+    ImportanceLevel GetLevel() {
+        std::lock_guard<std::mutex> lock(writeMutex);
+        return currentLevel;
+    }
+
     void SetLevel(ImportanceLevel level) {
         std::lock_guard<std::mutex> lock(writeMutex);
         currentLevel = level;
@@ -73,6 +78,10 @@ JournalLogger::JournalLogger(const std::string& filename, ImportanceLevel level)
 
 JournalLogger::~JournalLogger() {
     delete pImpl;
+}
+
+ImportanceLevel JournalLogger::GetLevel() {
+    return pImpl->GetLevel();
 }
 
 void JournalLogger::SetLevel(ImportanceLevel level) {

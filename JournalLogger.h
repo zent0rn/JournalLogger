@@ -15,6 +15,8 @@ public:
 
     ~JournalLogger();
 
+    ImportanceLevel GetLevel();
+
     void SetLevel(ImportanceLevel level);
 
     void SaveMessage(const std::string& message, ImportanceLevel level);
