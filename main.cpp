@@ -5,6 +5,7 @@
 #include <condition_variable>
 #include <atomic>
 #include <memory>
+#include <optional>
 
 class MessageQueue {
 public:
@@ -18,7 +19,7 @@ public:
         condition.notify_one();
     }
 
-    std::pair<std::string, ImportanceLevel> pop() {
+    std::optional<std::pair<std::string, ImportanceLevel>> pop() {
         std::unique_lock<std::mutex> lock(mutex);
 
         condition.wait(lock, [this] {
@@ -26,7 +27,7 @@ public:
         });
 
         if (stopped && queue.empty()) {
-            return{"", ImportanceLevel::Medium};
+            return std::nullopt;
         }
 
         auto item = queue.front();
@@ -42,30 +43,40 @@ public:
         condition.notify_all();
     }
 
+    bool is_stopped() const {
+        return stopped.load();
+    }
+
+    bool empty() const {
+        std::unique_lock<std::mutex> lock(mutex);
+        return queue.empty();
+    }
 
 private:
     std::queue<std::pair<std::string, ImportanceLevel>> queue;
-    std::mutex mutex;
+    mutable std::mutex mutex;
     std::condition_variable condition;
     std::atomic<bool> stopped{false};
 };
 
 int LogWriter(MessageQueue& queue, JournalLogger& logger) {
     int processedCount = 0;
-    std::pair<std::string, ImportanceLevel> item;
 
-    item = queue.pop();
+    while (!queue.is_stopped() || !queue.empty()) {
+        auto item = queue.pop();
 
-    while (!(item.first.empty() && item.second == ImportanceLevel::Medium)) {
-        logger.SaveMessage(item.first, item.second);
-        processedCount++;
-
-        item = queue.pop();
+        if (item.has_value()) {
+            logger.SaveMessage(item->first, item->second);
+            processedCount++;
+        }
+        else if (queue.is_stopped()) {
+            break;
+        }
     }
 
     logger.SaveMessage("Log writer thread stopped, processed " +
                    std::to_string(processedCount) + " messages",
-               ImportanceLevel::Medium);
+               ImportanceLevel::High);
 
     return processedCount;
 }
