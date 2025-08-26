@@ -16,6 +16,9 @@ public:
         }
     }
 
+    Impl(const Impl&) = delete;
+    Impl& operator=(const Impl&) = delete;
+
     ~Impl() {
         if (logFile.is_open()) {
             logFile.close();
@@ -75,6 +78,20 @@ private:
 
 JournalLogger::JournalLogger(const std::string& filename, ImportanceLevel level)
     : pImpl(new Impl(filename, level)) {}
+
+JournalLogger::JournalLogger(JournalLogger&& other) noexcept
+    : pImpl(other.pImpl) {
+    other.pImpl = nullptr;
+}
+
+JournalLogger& JournalLogger::operator=(JournalLogger&& other) noexcept {
+    if (this != &other) {
+        delete pImpl;
+        pImpl = other.pImpl;
+        other.pImpl = nullptr;
+    }
+    return *this;
+}
 
 JournalLogger::~JournalLogger() {
     delete pImpl;

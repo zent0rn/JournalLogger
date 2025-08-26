@@ -13,6 +13,12 @@ class JournalLogger {
 public:
     JournalLogger(const std::string& filename, ImportanceLevel level = ImportanceLevel::Medium);
 
+    JournalLogger(const JournalLogger&) = delete;
+    JournalLogger& operator=(const JournalLogger&) = delete;
+
+    JournalLogger(JournalLogger&& other) noexcept;
+    JournalLogger& operator=(JournalLogger&& other) noexcept;
+
     ~JournalLogger();
 
     ImportanceLevel GetLevel();
