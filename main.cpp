@@ -63,10 +63,7 @@ int LogWriter(MessageQueue& queue, JournalLogger& logger) {
     int processedCount = 0;
 
     while (auto item = queue.pop()) {
-        ImportanceLevel currentLevel = logger.GetLevel();
-        if (static_cast<int>(item->second) >= static_cast<int>(currentLevel)) {
-            logger.SaveMessage(item->first, item->second);
-        }
+        logger.SaveMessage(item->first, item->second);
         processedCount++;
     }
 

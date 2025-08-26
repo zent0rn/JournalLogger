@@ -2,6 +2,7 @@
 #define JOURNALLOGGER_H
 
 #include <string>
+#include <memory>
 
 enum class ImportanceLevel {
     Low,
@@ -31,7 +32,7 @@ public:
 
 private:
     class Impl;
-    Impl* pImpl;
+    std::unique_ptr<Impl> pImpl;
 };
 
 #endif // JOURNALLOGGER_H

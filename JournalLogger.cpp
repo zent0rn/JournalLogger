@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
+#include <memory>
 
 class JournalLogger::Impl {
 public:
@@ -77,25 +78,12 @@ private:
 };
 
 JournalLogger::JournalLogger(const std::string& filename, ImportanceLevel level)
-    : pImpl(new Impl(filename, level)) {}
+    : pImpl(std::make_unique<Impl>(filename, level)) {}
 
-JournalLogger::JournalLogger(JournalLogger&& other) noexcept
-    : pImpl(other.pImpl) {
-    other.pImpl = nullptr;
-}
+JournalLogger::JournalLogger(JournalLogger&& other) noexcept = default;
+JournalLogger& JournalLogger::operator=(JournalLogger&& other) noexcept = default;
 
-JournalLogger& JournalLogger::operator=(JournalLogger&& other) noexcept {
-    if (this != &other) {
-        delete pImpl;
-        pImpl = other.pImpl;
-        other.pImpl = nullptr;
-    }
-    return *this;
-}
-
-JournalLogger::~JournalLogger() {
-    delete pImpl;
-}
+JournalLogger::~JournalLogger() = default;
 
 ImportanceLevel JournalLogger::GetLevel() {
     return pImpl->GetLevel();
