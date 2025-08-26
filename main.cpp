@@ -62,16 +62,12 @@ private:
 int LogWriter(MessageQueue& queue, JournalLogger& logger) {
     int processedCount = 0;
 
-    while (!queue.is_stopped() || !queue.empty()) {
-        auto item = queue.pop();
-
-        if (item.has_value()) {
+    while (auto item = queue.pop()) {
+        ImportanceLevel currentLevel = logger.GetLevel();
+        if (static_cast<int>(item->second) >= static_cast<int>(currentLevel)) {
             logger.SaveMessage(item->first, item->second);
-            processedCount++;
         }
-        else if (queue.is_stopped()) {
-            break;
-        }
+        processedCount++;
     }
 
     logger.SaveMessage("Log writer thread stopped, processed " +
@@ -138,9 +134,16 @@ int main(int argc, char* argv[]) {
             if (input.find("level ") == 0) {
                 std::string levelStr = input.substr(6);
                 ImportanceLevel newLevel = ParseImportanceLevel(levelStr);
+                if (newLevel == ImportanceLevel::Medium && levelStr != "MEDIUM") {
+                    std::cout << "Неизвестный уровень важности: " << levelStr
+                              << ". Используется MEDIUM по умолчанию." << std::endl;
+                }
+                else {
+                    std::cout << "Уровень важности сообщений "
+                                 "по умолчанию изменен на: " << levelStr << std::endl;
+                }
                 logger.SetLevel(newLevel);
-                std::cout << "Уровень важности сообщений "
-                             "по умолчанию изменен на: " << levelStr << std::endl;
+
                 continue;
             }
 
@@ -152,9 +155,14 @@ int main(int argc, char* argv[]) {
                 ImportanceLevel level = ParseImportanceLevel(levelStr);
                 ImportanceLevel currentLevel = logger.GetLevel();
 
+
+
                 if (static_cast<int>(level) < static_cast<int>(currentLevel)) {
                     std::cout << "Сообщение не будет сохранено, так "
                                  "как имеет более низкий уровень важности" << std::endl;
+                } else if (level == ImportanceLevel::Medium && levelStr != "MEDIUM") {
+                    std::cout << "Неизвестный уровень важности: '" << levelStr
+                              << "'. Сообщение не сохранено." << std::endl;
                 } else {
                     queue.push(message, level);
                     std::cout << "Сообщение успешно сохранено" << std::endl;
